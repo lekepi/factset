@@ -42,7 +42,7 @@ class Trade(Base):
     is_cfd = Column(Boolean)
     origin = Column(String(length=10))
     active = Column(Boolean, default=True)
-    created_time = Column(Date, nullable=False, default=datetime.utcnow)
+    created_time = Column(Date, nullable=False, default=datetime.now)
     modified_time = Column(Date)
     created_by = Column(String(length=20), nullable=False)
     modified_by = Column(String(length=20))
@@ -198,7 +198,7 @@ class FundSplit(Base):
 class TaskChecker(Base):
     __tablename__ = 'task_checker'
     id = Column(Integer, primary_key=True)
-    date_time = Column(Date, nullable=False, default=datetime.utcnow)
+    date_time = Column(Date, nullable=False, default=datetime.now)
     task_name = Column(String(length=45), nullable=False)
     task_type = Column(String(length=45), nullable=False)
     task_details = Column(String(length=45), nullable=False)
@@ -213,7 +213,7 @@ class TaskChecker(Base):
 class LogDb(Base):
     __tablename__ = 'log_db'
     id = Column(Integer, primary_key=True)
-    date_time = Column(Date, nullable=False, default=datetime.utcnow)
+    date_time = Column(Date, nullable=False, default=datetime.now)
     project = Column(String(length=45), nullable=False)
     task = Column(String(length=45), nullable=False)
     issue = Column(String(length=45), nullable=False)
@@ -483,6 +483,12 @@ class User(Base):
     last_name = Column(String(20), unique=True, nullable=False)
     email = Column(String(120), unique=True, nullable=False)
 
+
+class NameValue(Base):
+    __tablename__ = 'name_value'
+    id = Column(Integer, primary_key=True)
+    name = Column(String(45), unique=True, nullable=False)
+    value = Column(String(45), nullable=False)
 
 def copy_trade(trade):
     amended_trade = Trade(

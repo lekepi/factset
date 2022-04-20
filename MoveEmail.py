@@ -1,8 +1,7 @@
 import win32com.client
 
 
-if __name__ == '__main__':
-
+def move_factset_email():
     outlook = win32com.client.Dispatch('outlook.application')
     mapi = outlook.GetNamespace('MAPI')
 
@@ -21,3 +20,8 @@ if __name__ == '__main__':
             message.Move(fs_folder)
 
     print(f'{count} email(s) transferred')
+
+
+if __name__ == '__main__':
+    move_factset_email()
+
