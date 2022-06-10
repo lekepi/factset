@@ -470,8 +470,8 @@ class FactSet(Base):
     __tablename__ = 'fact_set'
     id = Column(Integer, primary_key=True)
     symbol = Column(String(45))
-    product_id = Column(ForeignKey("product.id"))
-    product = relationship("Product")
+    # product_id = Column(ForeignKey("product.id"))
+    # product = relationship("Product")
     user_id = Column(Integer, ForeignKey("user.id"), nullable=False)
     user = relationship("User")
 
@@ -489,6 +489,7 @@ class NameValue(Base):
     id = Column(Integer, primary_key=True)
     name = Column(String(45), unique=True, nullable=False)
     value = Column(String(45), nullable=False)
+
 
 def copy_trade(trade):
     amended_trade = Trade(

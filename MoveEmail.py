@@ -1,17 +1,25 @@
 import win32com.client
 
 
+def find_mapi_folder_num(mapi, my_email):
+    num = 1
+    while str(mapi.folders(num)) != my_email:
+        num += 1
+    return num
+
+
 def move_factset_email():
     outlook = win32com.client.Dispatch('outlook.application')
     mapi = outlook.GetNamespace('MAPI')
+    mapi_num = find_mapi_folder_num(mapi, 'olivier@ananda-am.com')
 
-    for index, folder in enumerate(mapi.Folders(1).Folders(2).folders):
+    for index, folder in enumerate(mapi.Folders(mapi_num).Folders(2).folders):
         if folder.name == 'FactSet':
             fs_num = index + 1
             fs_folder = folder
             break
 
-    messages = mapi.Folders(1).Folders(2).Items
+    messages = mapi.Folders(mapi_num).Folders(2).Items
     count = 0
 
     for message in reversed(messages):

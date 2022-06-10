@@ -1,7 +1,7 @@
 import win32com.client
 from models import session, FactSet, User, NameValue
 from datetime import datetime
-from MoveEmail import move_factset_email
+from MoveEmail import move_factset_email, find_mapi_folder_num
 
 if __name__ == '__main__':
 
@@ -9,8 +9,9 @@ if __name__ == '__main__':
 
     outlook = win32com.client.Dispatch('outlook.application')
     mapi = outlook.GetNamespace('MAPI')
+    mapi_num = find_mapi_folder_num(mapi, 'media@ananda-am.com')
 
-    for index, folder in enumerate(mapi.Folders(1).Folders(2).folders):
+    for index, folder in enumerate(mapi.Folders(mapi_num).Folders(2).folders):
         if folder.name == 'FactSet':
             fs_num = index + 1
             fs_folder = folder
@@ -48,7 +49,6 @@ if __name__ == '__main__':
                         NewMsg.Subject = new_subject  # message.Subject
                         NewMsg.To = "olivier@ananda-am.com"
                         NewMsg.Send()
-
 
                         if received_time > max_time:
                             max_time = received_time
