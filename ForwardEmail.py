@@ -1,12 +1,14 @@
 import win32com.client
-from models import session, FactSet, User, NameValue
-from datetime import datetime
+from models import session, FactSet, User, NameValue, LogDb
+from datetime import datetime, date
 from MoveEmail import move_factset_email, find_mapi_folder_num
+from utils import add_log_db
+import logging
 
-if __name__ == '__main__':
+logging.basicConfig(format='%(asctime)s-%(levelname)s-%(message)s', level=logging.INFO, filename='app.log')
 
+def forward_email():
     move_factset_email()
-
     outlook = win32com.client.Dispatch('outlook.application')
     mapi = outlook.GetNamespace('MAPI')
     mapi_num = find_mapi_folder_num(mapi, 'media@ananda-am.com')
@@ -43,7 +45,8 @@ if __name__ == '__main__':
                 if symbol in body:
                     first_name = fact_set.user.first_name
                     if not first_name in send_to_list and received_time > last_time_real:
-                        new_subject = f'{subject} - {symbol} - {fact_set.user.first_name} - {received_time}'
+                        # new_subject = f'{subject} - {symbol} - {fact_set.user.first_name} - {received_time}'
+                        new_subject = f'{subject} - {symbol} - {fact_set.user.first_name}'
                         NewMsg = message.Forward()
                         NewMsg.Body = message.Body
                         NewMsg.Subject = new_subject  # message.Subject
@@ -57,5 +60,21 @@ if __name__ == '__main__':
 
     fact_set_obj.value = max_time.strftime('%Y-%m-%d %H:%M:%S.%f')
     session.commit()
-    print(f'{count} - Last update: {max_time}')
+    my_text = f'{count} email forwarded - Last update: {max_time}'
+    print(my_text)
+    logging.info(my_text, exc_info=True)
+
+    today = date.today()
+    today_dt = datetime(year=today.year, month=today.month, day=today.day)
+
+    factset_log = session.query(LogDb).filter(LogDb.date_time > today_dt).order_by(LogDb.date_time.desc()).first()
+    if factset_log:
+        factset_log.date_time = datetime.now()
+        session.commit()
+    else:
+        add_log_db("Factset", "loop", "NA", "Last loop", "Info")
+
+if __name__ == '__main__':
+    logging.info(" Schedule Task Factset Started", exc_info=True)
+    forward_email()
 
