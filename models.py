@@ -488,7 +488,7 @@ class NameValue(Base):
     __tablename__ = 'name_value'
     id = Column(Integer, primary_key=True)
     name = Column(String(45), unique=True, nullable=False)
-    value = Column(String(45), nullable=False)
+    my_value = Column(String(45), nullable=False)
 
 
 def copy_trade(trade):
