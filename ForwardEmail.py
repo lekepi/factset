@@ -80,15 +80,15 @@ def forward_email():
     logging.info(my_text, exc_info=True)
 
     today = date.today()
-    today_dt = datetime(year=today.year, month=today.month, day=today.day)
 
     factset_log = session.query(LogDb).filter(LogDb.project == 'Factset').filter(LogDb.task == 'Loop').\
-        filter(LogDb.date_time > today_dt).order_by(LogDb.date_time.desc()).first()
+        filter(LogDb.date_time > today).order_by(LogDb.date_time.desc()).first()
     if factset_log:
         factset_log.date_time = datetime.now()
         session.commit()
     else:
         add_log_db("Factset", "Loop", "NA", "Last loop", "Info")
+
 
 if __name__ == '__main__':
     logging.info(" Schedule Task Factset Started", exc_info=True)
