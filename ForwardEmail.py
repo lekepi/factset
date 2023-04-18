@@ -2,10 +2,11 @@ import win32com.client
 from models import session, FactSet, User, NameValue, LogDb
 from datetime import datetime, date
 from MoveEmail import move_factset_email, find_mapi_folder_num
-from utils import add_log_db
+from utils import add_log_db, loop_checker
 import logging
 
 logging.basicConfig(format='%(asctime)s-%(levelname)s-%(message)s', level=logging.INFO, filename='app.log')
+
 
 def is_in_body(symbol, body):
     if symbol in body:
@@ -25,7 +26,7 @@ def forward_email():
     move_factset_email()
     outlook = win32com.client.Dispatch('outlook.application')
     mapi = outlook.GetNamespace('MAPI')
-    mapi_num = find_mapi_folder_num(mapi, 'olivier@ananda-am.com')
+    mapi_num = find_mapi_folder_num(mapi, 'media@ananda-am.com')
 
     for index, folder in enumerate(mapi.Folders(mapi_num).Folders(2).folders):
         if folder.name == 'FactSet':
@@ -41,9 +42,10 @@ def forward_email():
     last_time_real = datetime.strptime(last_time_str, '%Y-%m-%d %H:%M:%S.%f')
     max_time = last_time_real
     last_time = last_time_real.strftime('%d/%m/%Y %H:%M %p')
-    # messages = fs_folder.Items.restrict(f"[ReceivedTime] > '{last_time}'")
-    messages = fs_folder.Items
+    messages = fs_folder.Items.restrict(f"[ReceivedTime] > '{last_time}'")
     count = 0
+
+    print(len(messages))
 
     # don't do nothing for Araceli
     fact_set_db = session.query(FactSet).join(User).filter(User.first_name != 'Araceli').all()
@@ -54,7 +56,7 @@ def forward_email():
         subject = message.subject
         received_time_str = message.receivedTime.strftime('%Y-%m-%d %H:%M:%S.%f')
         received_time = datetime.strptime(received_time_str, '%Y-%m-%d %H:%M:%S.%f')
-        if "From: FactSet Alerts" in body:
+        if "From: FactSet Alerts <FactSet_Alerts@factset.com>" in body:
             for fact_set in fact_set_db:
                 symbol = fact_set.symbol
                 if is_in_body(symbol, body):
@@ -65,7 +67,7 @@ def forward_email():
                         NewMsg = message.Forward()
                         NewMsg.Body = message.Body
                         NewMsg.Subject = new_subject  # message.Subject
-                        NewMsg.To = "olivier@ananda-am.com"
+                        NewMsg.To = fact_set.user.email
                         NewMsg.Send()
 
                         if received_time > max_time:
@@ -80,14 +82,16 @@ def forward_email():
     logging.info(my_text, exc_info=True)
 
     today = date.today()
+    today_dt = datetime(year=today.year, month=today.month, day=today.day)
 
-    factset_log = session.query(LogDb).filter(LogDb.project == 'Factset').filter(LogDb.task == 'Loop').\
-        filter(LogDb.date_time > today).order_by(LogDb.date_time.desc()).first()
+    factset_log = session.query(LogDb).filter(LogDb.project == 'Factset').filter(LogDb.date_time > today_dt).\
+        order_by(LogDb.date_time.desc()).first()
     if factset_log:
         factset_log.date_time = datetime.now()
         session.commit()
     else:
         add_log_db("Factset", "Loop", "NA", "Last loop", "Info")
+    loop_checker(30)
 
 
 if __name__ == '__main__':

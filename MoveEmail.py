@@ -14,7 +14,7 @@ def find_mapi_folder_num(mapi, my_email):
 def move_factset_email():
     outlook = win32com.client.Dispatch('outlook.application')
     mapi = outlook.GetNamespace('MAPI')
-    mapi_num = find_mapi_folder_num(mapi, 'olivier@ananda-am.com')
+    mapi_num = find_mapi_folder_num(mapi, 'media@ananda-am.com')
 
     for index, folder in enumerate(mapi.Folders(mapi_num).Folders(2).folders):
         if folder.name == 'FactSet':
