@@ -59,7 +59,7 @@ def simple_email(subject, body, ml, html=None):
 def loop_checker(minutes=30):
     today = datetime.now()
     current_time = datetime.now().hour + datetime.now().minute / 60
-    if current_time > 7 and today.weekday() < 5:
+    if current_time > 7.5 and today.weekday() < 5:
         loop_projects = ['Factset', 'Task Extra', 'Get Trade EMSX', 'PB NAV Reporting']
         today_dt = datetime(year=today.year, month=today.month, day=today.day)
         today_str = today.strftime('%Y-%m-%d')
